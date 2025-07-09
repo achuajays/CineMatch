@@ -15,6 +15,8 @@ import WatchedMovieDetailsPage from './components/WatchedMovieDetailsPage';
 import DislikedMoviesPage from './components/DislikedMoviesPage';
 import DislikedMovieDetailsPage from './components/DislikedMovieDetailsPage';
 import { Movie } from './types/movie';
+import RecommendationsPage from './components/RecommendationsPage';
+import RecommendedMovieDetailsPage from './components/RecommendedMovieDetailsPage';
 
 function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -166,6 +168,8 @@ function App() {
           <Route path="/watched-movie/:movieId" element={<WatchedMovieDetailsPage />} />
           <Route path="/disliked" element={<DislikedMoviesPage />} />
           <Route path="/disliked-movie/:movieId" element={<DislikedMovieDetailsPage />} />
+          <Route path="/recommendations" element={<RecommendationsPage />} />
+          <Route path="/movie-recommendation/:movieTitle" element={<RecommendedMovieDetailsPage />} />
         </Routes>
         
         <ApiKeyModal

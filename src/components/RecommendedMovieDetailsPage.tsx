@@ -1,40 +1,24 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Bell, ExternalLink } from 'lucide-react';
-import { Movie } from '../types/movie';
-import { getMovieImage } from '../services/imageService';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Search, Bell, Star, Calendar, Clock, ExternalLink } from 'lucide-react';
 
-interface MovieDetailsPageProps {
-  movies: Movie[];
+interface RecommendedMovie {
+  title: string;
+  year: string;
+  imdbRating: string;
+  genre: string;
+  actors: string;
+  plot: string;
+  poster: string;
 }
 
-const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
-  const { movieId } = useParams<{ movieId: string }>();
+const RecommendedMovieDetailsPage: React.FC = () => {
+  const { movieTitle } = useParams<{ movieTitle: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Find the movie by index (movieId)
-  const movieIndex = parseInt(movieId || '0');
-  const movie = movies[movieIndex];
-  const [posterUrl, setPosterUrl] = React.useState<string>('');
-  const [imageLoading, setImageLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    if (movie) {
-      const loadImage = async () => {
-        try {
-          const imageUrl = await getMovieImage(movie.name);
-          setPosterUrl(imageUrl);
-        } catch (error) {
-          console.error('Failed to load movie image:', error);
-          setPosterUrl(getPosterUrl(movie.name));
-        } finally {
-          setImageLoading(false);
-        }
-      };
-
-      loadImage();
-    }
-  }, [movie]);
+  // Get movie from location state
+  const movie = location.state?.movie as RecommendedMovie;
 
   if (!movie) {
     return (
@@ -42,31 +26,18 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Movie not found</h1>
           <button 
-            onClick={() => navigate('/')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => navigate(-1)}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
           >
-            Back to Home
+            Go Back
           </button>
         </div>
       </div>
     );
   }
 
-  // Generate a movie poster URL based on the movie name
-  const getPosterUrl = (movieName: string) => {
-    // Use a movie-themed image from Pexels
-    const movieImages = [
-      "https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1",
-      "https://images.pexels.com/photos/7991319/pexels-photo-7991319.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1",
-      "https://images.pexels.com/photos/796206/pexels-photo-796206.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1",
-      "https://images.pexels.com/photos/7991622/pexels-photo-7991622.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1",
-      "https://images.pexels.com/photos/33129/popcorn-movie-party-entertainment.jpg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1"
-    ];
-    return movieImages[movieIndex % movieImages.length];
-  };
-
   const handleIMDbClick = () => {
-    const imdbUrl = `https://www.imdb.com/find/?q=${encodeURIComponent(movie.name)}`;
+    const imdbUrl = `https://www.imdb.com/find/?q=${encodeURIComponent(movie.title + ' ' + movie.year)}`;
     window.open(imdbUrl, '_blank');
   };
 
@@ -96,14 +67,17 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
             <div className="hidden md:flex items-center gap-9">
               <button 
                 onClick={() => navigate('/')}
-                className="text-white text-sm font-medium leading-normal hover:text-blue-400 transition-colors flex items-center gap-2"
+                className="text-white text-sm font-medium leading-normal hover:text-blue-400 transition-colors"
               >
-                <ArrowLeft size={16} />
                 Home
               </button>
-              <a className="text-white text-sm font-medium leading-normal hover:text-blue-400 transition-colors" href="#">Movies</a>
-              <a className="text-white text-sm font-medium leading-normal hover:text-blue-400 transition-colors" href="#">TV Shows</a>
-              <a className="text-white text-sm font-medium leading-normal hover:text-blue-400 transition-colors" href="#">My List</a>
+              <button 
+                onClick={() => navigate(-1)}
+                className="text-purple-400 text-sm font-medium leading-normal flex items-center gap-2"
+              >
+                <ArrowLeft size={16} />
+                Back
+              </button>
             </div>
           </div>
           <div className="flex flex-1 justify-end gap-4 md:gap-8">
@@ -135,73 +109,78 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
           <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
             {/* Back Button for Mobile */}
             <button 
-              onClick={() => navigate('/')}
-              className="md:hidden flex items-center gap-2 text-white mb-4 hover:text-blue-400 transition-colors"
+              onClick={() => navigate(-1)}
+              className="md:hidden flex items-center gap-2 text-white mb-4 hover:text-purple-400 transition-colors"
             >
               <ArrowLeft size={20} />
-              Back to Home
+              Back
             </button>
 
             {/* Movie Details Card */}
             <div className="p-4">
               <div className="flex flex-col items-stretch justify-start rounded-xl xl:flex-row xl:items-start gap-6">
                 <div className="w-full aspect-video rounded-xl xl:max-w-md relative overflow-hidden">
-                  {imageLoading ? (
-                    <div className="w-full h-full bg-gradient-to-br from-[#2c3135] to-[#1a1f24] flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                    </div>
-                  ) : (
-                    <img 
-                      src={posterUrl} 
-                      alt={`${movie.name} poster`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = getPosterUrl(movie.name);
-                      }}
-                    />
-                  )}
+                  <img 
+                    src={movie.poster} 
+                    alt={`${movie.title} poster`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1";
+                    }}
+                  />
                 </div>
                 <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-4 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <h1 className="text-white text-2xl md:text-3xl font-bold leading-tight tracking-[-0.015em]">
-                      {movie.name}
+                      {movie.title}
                     </h1>
-                    <span className="bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap">
-                      {movie.genre}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-purple-600 text-white text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap">
+                        {movie.genre.split(',')[0].trim()}
+                      </span>
+                      <div className="flex items-center gap-1 text-yellow-400">
+                        <Star className="w-4 h-4 fill-current" />
+                        <span className="text-xs">{movie.imdbRating}</span>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="flex flex-col gap-3">
-                    <p className="text-[#a2abb3] text-lg font-medium leading-normal">
-                      {movie.smallDescription}
-                    </p>
+                    <div className="flex items-center gap-4 text-[#9cabba] text-sm">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>{movie.year}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{Math.floor(90 + Math.random() * 60)}m</span>
+                      </div>
+                    </div>
+                    
                     <p className="text-[#a2abb3] text-base font-normal leading-normal">
-                      {movie.bigDescription}
+                      {movie.plot}
                     </p>
                     
-                    {/* IMDb Button */}
-                    <div className="mt-4">
-                      <button
-                        onClick={handleIMDbClick}
-                        className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-                      >
-                        <ExternalLink size={16} />
-                        View on IMDb
-                      </button>
+                    <div className="text-[#9cabba] text-sm">
+                      <p className="font-medium mb-1">Starring:</p>
+                      <p>{movie.actors}</p>
                     </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={handleIMDbClick}
+                      className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                    >
+                      <ExternalLink size={16} />
+                      View on IMDb
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Synopsis Section */}
-            <h2 className="text-white text-xl md:text-2xl font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-              Synopsis
-            </h2>
-            <p className="text-white text-base font-normal leading-normal pb-3 pt-1 px-4">
-              {movie.synopsis}
-            </p>
 
             {/* Additional Details */}
             <div className="px-4 py-6">
@@ -213,16 +192,16 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
                     <span className="text-white ml-2">{movie.genre}</span>
                   </div>
                   <div>
-                    <span className="text-[#a2abb3]">Duration:</span>
-                    <span className="text-white ml-2">2h 15m</span>
+                    <span className="text-[#a2abb3]">Year:</span>
+                    <span className="text-white ml-2">{movie.year}</span>
                   </div>
                   <div>
-                    <span className="text-[#a2abb3]">Rating:</span>
-                    <span className="text-white ml-2">PG-13</span>
+                    <span className="text-[#a2abb3]">IMDb Rating:</span>
+                    <span className="text-white ml-2">★ {movie.imdbRating}</span>
                   </div>
                   <div>
-                    <span className="text-[#a2abb3]">Release Year:</span>
-                    <span className="text-white ml-2">2023</span>
+                    <span className="text-[#a2abb3]">Cast:</span>
+                    <span className="text-white ml-2">{movie.actors}</span>
                   </div>
                 </div>
               </div>
@@ -234,4 +213,4 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
   );
 };
 
-export default MovieDetailsPage;
+export default RecommendedMovieDetailsPage;

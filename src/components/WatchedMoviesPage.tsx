@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trash2, Calendar, Clock, Star, Search, Bell, Eye } from 'lucide-react';
 import { getWatchedMovies, removeFromWatched, WatchedMovie } from '../services/watchedMoviesService';
 import { getMovieImage } from '../services/imageService';
+import RecommendationButton from './RecommendationButton';
 
 const WatchedMoviesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -291,6 +292,18 @@ const WatchedMoviesPage: React.FC = () => {
                     >
                       <Trash2 size={18} />
                     </button>
+
+                    {/* Recommendation Button */}
+                    <RecommendationButton 
+                      movie={{
+                        name: movie.name,
+                        smallDescription: movie.smallDescription,
+                        genre: movie.genre,
+                        bigDescription: movie.bigDescription,
+                        synopsis: movie.synopsis
+                      }} 
+                      className="flex-shrink-0"
+                    />
                   </div>
                 ))}
               </div>

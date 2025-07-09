@@ -1,6 +1,5 @@
-// Image API service for fetching movie posters
-const IMAGE_API_URL = import.meta.env.VITE_IMAGE_API_URL;
-
+const API_URL = import.meta.env.VITE_API_URL;
+const IMAGE_API_URL = `${API_URL}/image-search/search`;
 // Local storage keys for image caching
 const IMAGE_CACHE_KEY = 'cinematch_image_cache';
 const CACHE_EXPIRY_KEY = 'cinematch_image_cache_expiry';
@@ -80,7 +79,7 @@ export const getMovieImage = async (movieName: string): Promise<string> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query: `${movieName} movie poster`
+        query: `${movieName}`
       })
     });
 

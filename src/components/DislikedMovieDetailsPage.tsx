@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, Bell, Star, Calendar, Clock, ThumbsDown, Trash2 } from 'lucide-react';
+import { ArrowLeft, Search, Bell, Star, Calendar, Clock, ThumbsDown, Trash2, ExternalLink } from 'lucide-react';
 import { DislikedMovie, removeFromDisliked } from '../services/dislikedMoviesService';
 import { getMovieImage } from '../services/imageService';
 
@@ -73,6 +73,11 @@ const DislikedMovieDetailsPage: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleIMDbClick = () => {
+    const imdbUrl = `https://www.imdb.com/find/?q=${encodeURIComponent(movie.name)}`;
+    window.open(imdbUrl, '_blank');
   };
 
   return (
@@ -198,6 +203,14 @@ const DislikedMovieDetailsPage: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={handleIMDbClick}
+                      className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                    >
+                      <ExternalLink size={16} />
+                      View on IMDb
+                    </button>
+                    
                     <button
                       onClick={handleRemoveFromDisliked}
                       className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
