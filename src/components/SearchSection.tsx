@@ -5,6 +5,7 @@ import { Movie } from '../types/movie';
 import { getSavedMovies } from '../services/storageService';
 import { getWatchedMovies } from '../services/watchedMoviesService';
 import { getDislikedMovies } from '../services/dislikedMoviesService';
+import { useToast } from '../hooks/useToast';
 
 interface SearchSectionProps {
   onMoviesFound: (movies: Movie[], query: string) => void;
@@ -21,6 +22,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(externalSearchQuery);
   const [isLoading, setIsLoading] = useState(false);
+  const { showWarning } = useToast();
 
   // Update internal state when external query changes
   React.useEffect(() => {
@@ -42,7 +44,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
     // Check if API key is configured
     const apiKey = localStorage.getItem('groq_api_key');
     if (!apiKey) {
-      alert('Please configure your Groq API key in settings first.');
+      showWarning('API Key Required', 'Please configure your Groq API key in settings first.');
       return;
     }
     

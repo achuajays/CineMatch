@@ -17,12 +17,21 @@ import DislikedMovieDetailsPage from './components/DislikedMovieDetailsPage';
 import { Movie } from './types/movie';
 import RecommendationsPage from './components/RecommendationsPage';
 import RecommendedMovieDetailsPage from './components/RecommendedMovieDetailsPage';
+import ThemedCollectionsPage from './components/ThemedCollectionsPage';
+import ThemedCollectionDetailsPage from './components/ThemedCollectionDetailsPage';
+import AuthPage from './components/AuthPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import FloatingChatbot from './components/FloatingChatbot';
+import ToastContainer from './components/ToastContainer';
+import { useToast } from './hooks/useToast';
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+  const { toasts, removeToast, showWarning } = useToast();
 
   const handleMoviesFound = (foundMovies: Movie[], query: string) => {
     setMovies(foundMovies);
@@ -51,7 +60,7 @@ function App() {
     // Check if API key is configured
     const apiKey = localStorage.getItem('groq_api_key');
     if (!apiKey) {
-      alert('Please configure your Groq API key in settings first.');
+      showWarning('API Key Required', 'Please configure your Groq API key in settings first.');
       return;
     }
     
@@ -91,7 +100,7 @@ function App() {
     // Check if API key is configured
     const apiKey = localStorage.getItem('groq_api_key');
     if (!apiKey) {
-      alert('Please configure your Groq API key in settings first.');
+      showWarning('API Key Required', 'Please configure your Groq API key in settings first.');
       return;
     }
     
@@ -170,6 +179,17 @@ function App() {
           <Route path="/disliked-movie/:movieId" element={<DislikedMovieDetailsPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/movie-recommendation/:movieTitle" element={<RecommendedMovieDetailsPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/themed-collections" element={
+            <ProtectedRoute>
+              <ThemedCollectionsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/themed-collection/:collectionId" element={
+            <ProtectedRoute>
+              <ThemedCollectionDetailsPage />
+            </ProtectedRoute>
+          } />
         </Routes>
         
         <ApiKeyModal
@@ -178,7 +198,12 @@ function App() {
           onSave={handleApiKeySave}
           currentApiKey={getCurrentApiKey()}
         />
+        
+        <FloatingChatbot />
       </div>
+      
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+      <Analytics/>
     </div>
   );
 }

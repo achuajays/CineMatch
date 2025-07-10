@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { Movie } from '../types/movie';
 import { saveMovie, removeSavedMovie, isMovieSaved, isStorageEnabled } from '../services/storageService';
+import { useToast } from '../hooks/useToast';
 
 interface SaveButtonProps {
   movie: Movie;
@@ -11,6 +12,7 @@ interface SaveButtonProps {
 const SaveButton: React.FC<SaveButtonProps> = ({ movie, className = '' }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { showWarning } = useToast();
 
   useEffect(() => {
     setIsSaved(isMovieSaved(movie));
@@ -20,7 +22,7 @@ const SaveButton: React.FC<SaveButtonProps> = ({ movie, className = '' }) => {
     e.stopPropagation();
     
     if (!isStorageEnabled()) {
-      alert('Please enable storage in settings to save movies.');
+      showWarning('Storage Disabled', 'Please enable storage in settings to save movies.');
       return;
     }
 

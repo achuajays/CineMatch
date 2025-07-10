@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Settings, Bookmark, Heart, Eye, Menu, X, ThumbsDown } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Settings, Bookmark, Heart, Eye, Menu, X, ThumbsDown, Film, LogOut, User } from 'lucide-react';
 import { getSavedMoviesCount, isStorageEnabled } from '../services/storageService';
 import { getWatchedMoviesCount } from '../services/watchedMoviesService';
 import { getDislikedMoviesCount } from '../services/dislikedMoviesService';
+import { getCurrentUser, signOut, onAuthStateChange } from '../services/supabaseClient';
 
 interface HeaderProps {
   onSettingsClick: () => void;
@@ -11,7 +12,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   
   // Memoize counts to prevent unnecessary recalculations
   const counts = useMemo(() => ({
@@ -19,6 +22,23 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
     watched: getWatchedMoviesCount(),
     disliked: getDislikedMoviesCount(),
   }), []);
+
+  // Check authentication status
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    
+    checkAuth();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = onAuthStateChange((user) => {
+      setUser(user);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
 
   const toggleMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(prev => !prev);
@@ -37,6 +57,28 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
     onSettingsClick();
     closeMobileMenu();
   }, [onSettingsClick, closeMobileMenu]);
+
+  const handleLogoClick = useCallback(() => {
+    // Only navigate to home if not already on homepage
+    if (location.pathname !== '/') {
+      navigate('/');
+    }
+  }, [navigate, location.pathname]);
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+      navigate('/');
+      closeMobileMenu();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  }, [navigate, closeMobileMenu]);
+
+  const handleAuthClick = useCallback(() => {
+    navigate('/auth');
+    closeMobileMenu();
+  }, [navigate, closeMobileMenu]);
 
   // Memoized badge component for better performance
   const Badge = React.memo(({ count, color }: { count: number; color: string }) => {
@@ -77,7 +119,12 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
     <>
       <header className="sticky top-0 z-40 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#283039] px-4 md:px-10 py-3 bg-[#111418]/95 backdrop-blur-md">
         {/* Logo Section - Optimized */}
-        <div className="flex items-center gap-4 text-white">
+        <div 
+          className={`flex items-center gap-4 text-white ${
+            location.pathname !== '/' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
+          }`}
+          onClick={location.pathname !== '/' ? handleLogoClick : undefined}
+        >
           <div className="size-8 md:size-10 transform hover:scale-110 transition-transform duration-200">
             <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
               <path
@@ -123,6 +170,13 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
           />
           
           <NavButton
+            icon={Film}
+            onClick={() => user ? navigate('/themed-collections') : navigate('/auth')}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            title="Themed Collections"
+          />
+          
+          <NavButton
             icon={Heart}
             onClick={() => navigate('/thank-you')}
             className="bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700"
@@ -135,13 +189,31 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
             title="Settings"
           />
 
-          {/* Profile Avatar - Enhanced */}
-          <div
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 hover:ring-2 hover:ring-blue-400/50 transition-all duration-200 cursor-pointer transform hover:scale-110 shadow-lg"
-            style={{
-              backgroundImage: 'url("https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1")'
-            }}
-          />
+          {/* Auth Section */}
+          {user ? (
+            <div className="flex items-center gap-2">
+              <div
+                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 hover:ring-2 hover:ring-blue-400/50 transition-all duration-200 cursor-pointer transform hover:scale-110 shadow-lg"
+                style={{
+                  backgroundImage: 'url("https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1")'
+                }}
+                title={user.email}
+              />
+              <NavButton
+                icon={LogOut}
+                onClick={handleSignOut}
+                className="bg-red-600 hover:bg-red-700"
+                title="Sign Out"
+              />
+            </div>
+          ) : (
+            <NavButton
+              icon={User}
+              onClick={handleAuthClick}
+              className="bg-blue-600 hover:bg-blue-700"
+              title="Sign In"
+            />
+          )}
         </div>
 
         {/* Mobile Section - Optimized */}
@@ -218,6 +290,14 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
               </button>
               
               <button 
+                onClick={() => user ? navigate('/themed-collections') : navigate('/auth')}
+                className="relative flex items-center gap-3 w-full p-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Film size={20} />
+                <span className="font-medium">Themed Collections</span>
+              </button>
+              
+              <button 
                 onClick={() => handleNavigation('/thank-you')}
                 className="flex items-center gap-3 w-full p-4 rounded-xl bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
               >
@@ -227,13 +307,43 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
               
               <div className="border-t border-[#3a424d] my-2" />
               
-              <button 
-                onClick={handleSettingsClick}
-                className="flex items-center gap-3 w-full p-4 rounded-xl bg-[#283039] hover:bg-[#3a424d] text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Settings size={20} />
-                <span className="font-medium">Settings</span>
-              </button>
+              {user ? (
+                <>
+                  <button 
+                    onClick={handleSettingsClick}
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-[#283039] hover:bg-[#3a424d] text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Settings size={20} />
+                    <span className="font-medium">Settings</span>
+                  </button>
+                  
+                  <button 
+                    onClick={handleSignOut}
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <LogOut size={20} />
+                    <span className="font-medium">Sign Out</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={handleSettingsClick}
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-[#283039] hover:bg-[#3a424d] text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Settings size={20} />
+                    <span className="font-medium">Settings</span>
+                  </button>
+                  
+                  <button 
+                    onClick={handleAuthClick}
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <User size={20} />
+                    <span className="font-medium">Sign In</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </>

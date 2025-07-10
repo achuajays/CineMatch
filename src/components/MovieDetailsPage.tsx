@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Bell, ExternalLink } from 'lucide-react';
 import { Movie } from '../types/movie';
 import { getMovieImage } from '../services/imageService';
+import AddToPlaylistButton from './AddToPlaylistButton';
 
 interface MovieDetailsPageProps {
   movies: Movie[];
@@ -181,7 +182,7 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
                     </p>
                     
                     {/* IMDb Button */}
-                    <div className="mt-4">
+                    <div className="flex items-center gap-3 mt-4">
                       <button
                         onClick={handleIMDbClick}
                         className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
@@ -189,6 +190,11 @@ const MovieDetailsPage: React.FC<MovieDetailsPageProps> = ({ movies }) => {
                         <ExternalLink size={16} />
                         View on IMDb
                       </button>
+                      
+                      <AddToPlaylistButton 
+                        movie={movie}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                      />
                     </div>
                   </div>
                 </div>
