@@ -184,25 +184,25 @@ const FloatingChatbot: React.FC = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-28 right-6 z-50 w-96 h-[500px] bg-[#283039] rounded-xl shadow-2xl border border-[#3a424d] flex flex-col overflow-hidden">
+        <div className="fixed bottom-28 right-4 left-4 md:left-auto md:right-6 z-50 w-auto md:w-96 max-w-md h-[500px] bg-[#283039] rounded-xl shadow-2xl border border-[#3a424d] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-5 text-white">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 md:p-5 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-xl">Movie Assistant</h3>
-                <p className="text-sm opacity-90">Ask me about movies & stories</p>
+                <h3 className="font-bold text-lg md:text-xl">Movie Assistant</h3>
+                <p className="text-xs md:text-sm opacity-90">Ask me about movies & stories</p>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="p-1.5 md:p-2 hover:bg-white/20 rounded-full transition-colors"
               >
-                <X size={24} />
+                <X size={20} className="md:w-6 md:h-6" />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#1a1f24]">
+          <div className="flex-1 overflow-y-auto p-3 md:p-5 space-y-3 md:space-y-4 bg-[#1a1f24]">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -215,7 +215,7 @@ const FloatingChatbot: React.FC = () => {
                       : 'bg-[#283039] text-white border border-[#3a424d]'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                  <p className="text-xs md:text-sm leading-relaxed whitespace-pre-wrap break-words">
                     {message.content}
                   </p>
                   <p className={`text-xs mt-1 opacity-70 ${
@@ -232,8 +232,8 @@ const FloatingChatbot: React.FC = () => {
               <div className="flex justify-start">
                 <div className="bg-[#283039] text-white border border-[#3a424d] p-3 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Loader2 size={18} className="animate-spin" />
-                    <span className="text-sm">Thinking...</span>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span className="text-xs md:text-sm">Thinking...</span>
                   </div>
                 </div>
               </div>
@@ -241,26 +241,26 @@ const FloatingChatbot: React.FC = () => {
           </div>
 
           {/* Input */}
-          <div className="p-5 bg-[#283039] border-t border-[#3a424d]">
-            <div className="flex gap-3">
+          <div className="p-3 md:p-5 bg-[#283039] border-t border-[#3a424d]">
+            <div className="flex gap-2 md:gap-3">
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about movies, stories..."
-                className="flex-1 bg-[#1a1f24] text-white rounded-lg px-4 py-3 border border-[#3a424d] focus:border-blue-500 focus:outline-none transition-colors resize-none text-sm"
+                className="flex-1 bg-[#1a1f24] text-white rounded-lg px-3 md:px-4 py-2 md:py-3 border border-[#3a424d] focus:border-blue-500 focus:outline-none transition-colors resize-none text-xs md:text-sm"
                 rows={2}
                 disabled={isLoading}
               />
               <button
                 onClick={sendMessage}
                 disabled={!inputValue.trim() || isLoading}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[48px]"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-2 md:p-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[40px] md:min-w-[48px]"
               >
                 {isLoading ? (
-                  <Loader2 size={18} className="animate-spin" />
+                  <Loader2 size={16} className="md:w-[18px] md:h-[18px] animate-spin" />
                 ) : (
-                  <Send size={18} />
+                  <Send size={16} className="md:w-[18px] md:h-[18px]" />
                 )}
               </button>
             </div>
